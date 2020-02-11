@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[54]:
 
 
 # Weather check
@@ -10,7 +10,7 @@
 # reminders/alerts
 
 
-# In[288]:
+# In[55]:
 
 
 from pprint import pprint
@@ -18,9 +18,10 @@ import requests
 import re
 import time
 from datetime import datetime
+import threading 
 
 
-# In[311]:
+# In[56]:
 
 
 # using openweathermap
@@ -85,7 +86,7 @@ class Weather:
 
 
 
-# In[312]:
+# In[57]:
 
 
 # bus
@@ -103,14 +104,14 @@ class Weather:
 # http://webservices.nextbus.com/service/publicXMLFeed?command=predictions&a=sf-muni&r=57&s=4704
 
 
-# In[313]:
+# In[58]:
 
 
 class busSchedule():
     def getPrediction(self):
         req_BS = requests.get('http://webservices.nextbus.com/service/publicXMLFeed?command=predictions&a=sf-muni&r=57&s=4704')
         if(req_BS.status_code == 200):
-            print("->  Fetched Schedule @ " + str(datetime.now()).split(" ")[1].split(".")[0])
+            print("->  Fetched Schedule!")
             text = req_BS.text
             startList = ([m.start() for m in re.finditer('<prediction ', text)])
             endList = ([m.start() for m in re.finditer('/>', text)])
@@ -124,13 +125,16 @@ class busSchedule():
             return None
 
 
-# In[ ]:
+# In[59]:
 
 
+def PRINTTIME():
+    while(True):
+        print("->  Time: " + str(datetime.now()).split(" ")[1].split(".")[0])
+        time.sleep(60)
 
 
-
-# In[315]:
+# In[60]:
 
 
 def DAILYSCHEDULE():
@@ -138,9 +142,9 @@ def DAILYSCHEDULE():
     scheduleToday = busSchedule()
     if(weatherToday.isFetched): 
         print("->  Weather today:")
-        print("->  isWindy: " + str(weatherToday.isWindy()))
-        print("->  isCold: " + str(weatherToday.isCold()))
-        print("->  getDescription: " + str(weatherToday.getDescription()))
+        print("->     isWindy: " + str(weatherToday.isWindy()))
+        print("->     isCold: " + str(weatherToday.isCold()))
+        print("->     getDescription: " + str(weatherToday.getDescription()))
         print()
     while(True):
         schedule = scheduleToday.getPrediction()
@@ -148,7 +152,7 @@ def DAILYSCHEDULE():
             print("->  Next Buses in: ",end="" )
             print(schedule)
             print()
-            time.sleep(60*4)
+            time.sleep(60*3)
 
 
 # In[ ]:
@@ -157,10 +161,18 @@ def DAILYSCHEDULE():
 
 
 
-# In[ ]:
+# In[53]:
 
 
-DAILYSCHEDULE()
+if(__name__ == "__main__"):    
+    t1 = threading.Thread(target = DAILYSCHEDULE)
+    t2 = threading.Thread(target = PRINTTIME)
+    t1.setDaemon(True)
+    t2.setDaemon(True)
+    t1.start()
+    t2.start()
+    while True:
+        pass
 
 
 # In[ ]:
